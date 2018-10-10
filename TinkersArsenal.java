@@ -35,11 +35,11 @@ public class TinkersArsenal
 
     public static boolean isTest = false;                //This boolean and the ones after it don't change any of how the mod functions, but they will flood your logs if they're turned on. Use only for debugging.
     public static boolean checkRender = true;
-    public static boolean checkProjectiles = false;
+    public static boolean checkProjectiles = true;
     public static boolean checkPreStats = false;
     public static boolean checkMaterialAbilities = false;
     public static boolean checkTraits = false;
-    public static boolean trackGunFiring = true;
+    public static boolean trackGunFiring = false;
 
     public static GuiHandler guiHandler = new GuiHandler();
 
@@ -47,9 +47,10 @@ public class TinkersArsenal
 
     //public static TinkersProxy proxy;
 
-    public TinkersArsenal () {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
+    /*public TinkersArsenal () {
+        MinecraftForge.EVENT_BUS.register(this); //DISABLED AS REQUESTED BY FERDI
+    }*/
+
     /*@SubscribeEvent
     public static void materialConfig(File saveLoc)
     */

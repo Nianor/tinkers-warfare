@@ -4,6 +4,7 @@ import com.direwolf20.buildinggadgets.network.PacketHandler;
 import com.google.common.collect.Lists;
 import com.nianor.tinkersarsenal.common.entities.EntityArsenalProjectile;
 import com.nianor.tinkersarsenal.client.render.EntityArsenalProjectileRender;
+import com.nianor.tinkersarsenal.common.tileentities.DamageCounterEntity;
 import com.nianor.tinkersarsenal.items.BaseGunItem;
 import com.nianor.tinkersarsenal.network.VelocityPacket;
 import com.nianor.tinkersarsenal.network.KeyPressPacket;
@@ -39,6 +40,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.commons.lang3.tuple.Pair;
@@ -137,6 +139,7 @@ public class CommonProxy {
     public void preInit (FMLPreInitializationEvent event){
         TinkersArsenal.logger.info("Preinit started!");
         PacketHandler.registerMessages();
+        GameRegistry.registerTileEntity(DamageCounterEntity.class, new ResourceLocation("this isn't really needed. -_-"));
         File directory = event.getModConfigurationDirectory();
         config = new Configuration(new File(directory.getPath(), "TinkersArsenal.cfg"));
         Config.readConfig();

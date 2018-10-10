@@ -22,6 +22,6 @@ public class ModEntities {
     }
 
     public static void initModels() {
-        RenderingRegistry.registerEntityRenderingHandler(EntityArsenalProjectile.class, new EntityArsenalProjectileRender(Minecraft.getMinecraft().getRenderManager()));
+        //RenderingRegistry.registerEntityRenderingHandler(EntityArsenalProjectile.class, new EntityArsenalProjectileRender(Minecraft.getMinecraft().getRenderManager()));
     }
 }

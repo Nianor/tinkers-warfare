@@ -2,6 +2,7 @@ package com.nianor.tinkersarsenal.common.entities;
 
 import com.nianor.tinkersarsenal.ClientProxy;
 import com.nianor.tinkersarsenal.CommonProxy;
+import com.nianor.tinkersarsenal.common.tileentities.DamageCounterEntity;
 import com.nianor.tinkersarsenal.network.SimpleNetworkWrapper;
 import com.nianor.tinkersarsenal.network.VelocityPacket;
 import com.nianor.tinkersarsenal.util.RenderHelper;
@@ -15,11 +16,13 @@ import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketEntityTeleport;
 import net.minecraft.util.*;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -36,7 +39,7 @@ import static com.nianor.tinkersarsenal.TinkersArsenal.*;
 
 public class EntityArsenalProjectile extends EntityThrowable {
 
-    
+
     public int roll = 0;
     public int previousRoll;
     public int rollSpeed = 0;
@@ -64,6 +67,7 @@ public class EntityArsenalProjectile extends EntityThrowable {
     public static double xPosPrevQuiet;
     public static double yPosPrevQuiet;
     public static double zPosPrevQuiet;
+    //REMOVED THIS, WE'LL SEE HOW MUCH STUFF IT BREAKS. MIGHT BE BETTER TO DO WITHOUT.
     public Vector3d motionVector;
     private double dragAcceleration;
     private Vector3d motionVectorOld;
@@ -191,10 +195,6 @@ public class EntityArsenalProjectile extends EntityThrowable {
         //Minecraft.getMinecraft().getIntegratedServer()
     }
 
-    protected Vector3d getMotionVector(){
-        return motionVector;
-    }
-
     @Override
     protected void onImpact(RayTraceResult result) {
         System.out.println("First Update: "+firstUpdate+"\nHit Result: "+result+"\nEntity Thrower: "+entityThrower);
@@ -236,16 +236,29 @@ public class EntityArsenalProjectile extends EntityThrowable {
                 else if (iblockstate.getBlockHardness(world, blockpos) != -1){
                     resistance = (float)Math.pow((iblockstate.getBlockHardness(world, blockpos)+1), 3);
                 }
-                float destruction=(float)(((velocityPrivate*caliber))*(Math.pow(Math.random(), 9)));
+                float destruction=(float)(((velocityPrivate*caliber))*(Math.pow(Math.random(), 5)));
                 System.out.println("Destruction: "+destruction+"\nResistance: "+resistance+"\nBlock: "+iblockstate.getBlock().getLocalizedName());
                 System.out.println("Progress marker 2");
-                if(resistance-destruction<0) {
+                if(world.getTileEntity(result.getBlockPos()) instanceof DamageCounterEntity) {
+                    ((DamageCounterEntity) world.getTileEntity(result.getBlockPos())).damage(Math.round(destruction));
+                }
+                else {
+                    new DamageCounterEntity();
+                    NBTTagCompound compound = new NBTTagCompound();
+                    compound.setInteger("health", 100);
+                    compound.setInteger("damage", Math.round(destruction));
+                    compound.setInteger("x", result.getBlockPos().getX());
+                    compound.setInteger("y", result.getBlockPos().getY());
+                    compound.setInteger("z", result.getBlockPos().getZ());
+                    DamageCounterEntity.create(world, compound);
+                }
+                /*if(resistance-destruction<0) {
                     if(!world.isRemote) {
                         world.destroyBlock(blockpos, false);
                     }
                     System.out.println("Block broken.");
-                }
-                else if (world.isRemote){
+                }*/
+                if (world.isRemote){
                     double xSpeed=0;
                     double ySpeed=0;
                     double zSpeed=0;
@@ -276,6 +289,7 @@ public class EntityArsenalProjectile extends EntityThrowable {
                         yDisplacement=.5F;
                         zDisplacement=(float)Math.random()-.5F;
                     }
+                    /*
                     for (int j = 0; j < Math.round(velocityPrivate*caliber); ++j)
                     {
                         xSpeed=xSpeed*(Math.random()+1);
@@ -291,6 +305,7 @@ public class EntityArsenalProjectile extends EntityThrowable {
                             System.out.println("Played on server, no effect.");
                         }
                     }
+                    */
                     //Minecraft.getMinecraft().effectRenderer.addEffect(new ParticleImpact(world, blockpos.getX(), blockpos.getY(), blockpos.getZ(), xSpeed, ySpeed, zSpeed, iblockstate));
                 }
             }
@@ -312,6 +327,10 @@ public class EntityArsenalProjectile extends EntityThrowable {
 
     @Override
     public void onUpdate() {
+        if(this.posY<0&&!Loader.isModLoaded("cubicchunks")&&(dimension!=1||dimension!=0||dimension!=-1)) {
+            System.out.println("Projectile below bedrock, setting to dead.\nX position: "+this.posX+"\nY position: "+this.posY+"\nZ position: "+this.posZ);
+            this.setDead();
+        }
         this.setInvisible(false);
         if(!world.isRemote) {
             world.getMinecraftServer().getWorld(this.dimension).getEntityTracker().sendToTracking(this, new SPacketEntityTeleport(this));
@@ -328,7 +347,7 @@ public class EntityArsenalProjectile extends EntityThrowable {
         System.out.println("\nMotion vector: "+motionVector+"\nEntity ID: "+this.getEntityId()+"\nIs invisible? "+this.isInvisible());
         velocityPrivate=motionVector.length();
         //This is where the value of n is set, based on, again, the values Pejsa defines. The odd decimals are simply a result of converting feet per second to blocks per tick.
-        if(velocityPrivate<13.716||(velocityPrivate<21.336&&velocityPrivate>=18.288)) {
+        /*if(velocityPrivate<13.716||(velocityPrivate<21.336&&velocityPrivate>=18.288)) {
             n=0;
         }
         else if (velocityPrivate>=13.716&&velocityPrivate<18.288) {
@@ -336,13 +355,38 @@ public class EntityArsenalProjectile extends EntityThrowable {
         }
         else if (velocityPrivate>=21.336) {
             n=.5F;
-        }
+        }*/
         if(/*!world.isRemote*/true) {
             //THIS NEEDS THE ADDITION OF MASS AND AN ACTUAL DRAG COEFFICIENT
             System.out.println("N: " + n);
             System.out.println("BC: " + ballisticCoefficient);
-            dragAcceleration = .1 * Math.pow(velocityPrivate, 2 - n) / ballisticCoefficient;
-            double velocityTestMatch = (velocityPrivate-(Math.pow(velocityPrivate, 2 - n)/(30*ballisticCoefficient)));
+            //double velocityTestMatch = (velocityPrivate-(Math.pow(velocityPrivate, 2 - n)/(30*ballisticCoefficient)));
+            double velocityTestMatch = (velocityPrivate-(Math.pow(velocityPrivate, 2 - ((9/(Math.pow(velocityPrivate-15, 2)+3))+Math.pow(velocityPrivate/20, .25)/2))/(30*ballisticCoefficient)));//This is an experimental drag calculation to bypass the need for an "n" value by substituting a simplified calculation
+            /*if(((velocityTestMatch>=13.716&&velocityTestMatch<18.288)&&n!=-3.0f)||(velocityTestMatch>=21.336&&n!=.5)||(n!=0&&(velocityTestMatch<13.716||(velocityTestMatch<21.336&&velocityTestMatch>=18.288)))){
+                System.out.println("AERODYNAMIC SHIFT DETECTED");
+                double targetVelocity=0;
+                float nextN=0;
+                if(velocityPrivate>=21.336) {
+                    targetVelocity=21.336;
+                    nextN=0F;
+                }
+                else if (velocityPrivate>=18.288) {
+                    targetVelocity=18.288;
+                    nextN=-3.0F;
+                }
+                else if (velocityPrivate>=13.716) {
+                    targetVelocity=13.716;
+                    nextN=0F;
+                }
+                    double timeMultiplier = (velocityPrivate-targetVelocity)/((Math.pow(velocityPrivate, 2-n)/(30*ballisticCoefficient)));
+                    System.out.println("Time Multiplier: "+timeMultiplier);
+                    velocityTestMatch=velocityPrivate-timeMultiplier*((Math.pow(velocityPrivate, 2-n)/(30*ballisticCoefficient)));
+                    velocityTestMatch=velocityTestMatch-(1-timeMultiplier)*((Math.pow(velocityTestMatch, 2-nextN)/(30*ballisticCoefficient)));
+                //velocityTestMatch=(velocityPrivate-(Math.pow(velocityPrivate, 2-n)/(30*ballisticCoefficient)));//TRY SOLVING FOR THE TIME THAT n SWITCHES, THEN CALCULATE IT AS TWO INTEGRALS. PROBLEM SOLVED.
+
+                System.out.println("Final Velocity: " + velocityTestMatch);
+            }
+
             /*int velocityIterator = 0;
             int velocityFactor = (int) Math.round(velocityPrivate * 25);
             while (velocityIterator < velocityFactor) {
@@ -359,6 +403,69 @@ public class EntityArsenalProjectile extends EntityThrowable {
         if(!firstUpdateEnabled) {
             firstUpdate=false;
         }
+
+        motionVector = new Vector3d(velocityPrivate*Math.sin(this.rotationPitch)*Math.cos(this.rotationYaw), velocityPrivate*Math.sin(this.rotationPitch), velocityPrivate*Math.cos(this.rotationPitch)*Math.sin(this.rotationYaw));
+
+        this.motionX = motionVector.getX();
+        this.motionY = motionVector.getY();
+        this.motionZ = motionVector.getZ();
+
+        float f1 = 1F;
+        float f2 = this.getGravityVelocity();
+
+        if (this.isInWater())
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                float f3 = 0.25F;
+                this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX - this.motionX * 0.25D, this.posY - this.motionY * 0.25D, this.posZ - this.motionZ * 0.25D, this.motionX, this.motionY, this.motionZ);
+            }
+
+            f1 = 0.8F;
+        }
+
+        this.motionX *= (double)f1;
+        this.motionY *= (double)f1;
+        this.motionZ *= (double)f1;
+
+        if (!this.hasNoGravity())
+        {
+            this.motionY -= (double)f2;
+        }
+
+
+        this.motionVector=new Vector3d(this.motionX, this.motionY, this.motionZ);
+
+        float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+        this.rotationYaw = (float)(MathHelper.atan2(this.motionX, this.motionZ) * (180D / Math.PI));
+
+        for (this.rotationPitch = (float)(MathHelper.atan2(this.motionY, (double)f) * (180D / Math.PI)); this.rotationPitch - this.prevRotationPitch < -180.0F; this.prevRotationPitch -= 360.0F)
+        {
+
+        }
+
+        while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
+        {
+            this.prevRotationPitch += 360.0F;
+        }
+
+        while (this.rotationYaw - this.prevRotationYaw < -180.0F)
+        {
+            this.prevRotationYaw -= 360.0F;
+        }
+
+        while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
+        {
+            this.prevRotationYaw += 360.0F;
+        }
+
+        this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2F;
+        this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2F;
+
+        motionVector = new Vector3d(velocityPrivate*Math.sin(this.pitch)*Math.cos(this.yaw), velocityPrivate*Math.sin(this.pitch), velocityPrivate*Math.cos(this.pitch)*Math.sin(this.yaw));
+        this.motionX=motionVector.getX();
+        this.motionY=motionVector.getY();
+        this.motionZ=motionVector.getZ();
         {
             Vec3d vec3d = new Vec3d(this.posX, this.posY, this.posZ);
             Vec3d vec3d1 = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
@@ -366,7 +473,7 @@ public class EntityArsenalProjectile extends EntityThrowable {
             vec3d = new Vec3d(this.posX, this.posY, this.posZ);
             vec3d1 = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
             if(checkProjectiles){logger.info("RAYTRACING BEGINNING: \nPOSITIONVECTOR:\n   X:{}\n   Y:{}\n   Z:{}\nMOVEMENTVECTOR:\n   X:{}\n   Y:{}\n   Z:{}\nRESULT: {}",vec3d.x,vec3d.y,vec3d.z, vec3d1.x, vec3d1.y,vec3d1.z,raytraceresult);}
-
+            System.out.println("Raytrace results: " + raytraceresult);
             if (raytraceresult != null)
             {
                 vec3d1 = new Vec3d(raytraceresult.hitVec.x, raytraceresult.hitVec.y, raytraceresult.hitVec.z);
@@ -381,6 +488,7 @@ public class EntityArsenalProjectile extends EntityThrowable {
                 }
 
                 for (int i = 0; i < list.size(); ++i) {
+                    System.out.println("Length of collision list: "+list.size());
                     Entity entity1 = list.get(i);
 
                     if (entity1.canBeCollidedWith()) {
@@ -393,8 +501,10 @@ public class EntityArsenalProjectile extends EntityThrowable {
                         //}
                         else if (this.thrower != null && this.ticksExisted < -1 && this.ignoreEntity == null) {
                             this.ignoreEntity = entity1;
+                            System.out.println("Thrower not null, ticks existed less than negative 1(?), and no entity set to be ignored.");
                             flag = true;
                         } else {
+                            System.out.println("Thrower: "+thrower+"\nTicks existed: "+ticksExisted+"\nIgnore Entity: "+ignoreEntity);
                             flag = false;
                             AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow(0.30000001192092896D);
                             RayTraceResult raytraceresult1 = axisalignedbb.calculateIntercept(vec3d, vec3d1);
@@ -452,6 +562,10 @@ public class EntityArsenalProjectile extends EntityThrowable {
             //firstUpdate = false;
         }
 
+        this.posX+=this.motionX;
+        this.posY+=this.motionY;
+        this.posZ+=this.motionZ;
+
         //if (isServer) {
         //    if(checkProjectiles) {logger.info("SENDING PROPER VELOCITY UPDATES");}
         //    SimpleNetworkWrapper.INSTANCE.sendToAll(new VelocityPacket(this, this.getEntityId(), this.posX, this.posY, this.posZ, this.motionX, this.motionY, this.motionZ));
@@ -465,61 +579,6 @@ public class EntityArsenalProjectile extends EntityThrowable {
 
         //velocityPrivate = this.
 
-        this.posX=this.prevPosX;
-        this.posY=this.prevPosY;
-        this.posZ=this.prevPosZ;
-        this.posX += motionVector.getX();
-        this.posY += motionVector.getY();
-        this.posZ += motionVector.getZ();
-        motionVector = new Vector3d(velocityPrivate*Math.sin(this.pitch)*Math.cos(this.yaw), velocityPrivate*Math.sin(this.pitch), velocityPrivate*Math.cos(this.pitch)*Math.sin(this.yaw));
-        //motionVector = new Vector3d(velocityPrivate*Math.sin(this.rotationPitch)*Math.cos(this.rotationYaw), velocityPrivate*Math.sin(this.rotationPitch), velocityPrivate*Math.cos(this.rotationPitch)*Math.sin(this.rotationYaw));
-        float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
-        this.rotationYaw = (float)(MathHelper.atan2(this.motionX, this.motionZ) * (180D / Math.PI));
-
-        for (this.rotationPitch = (float)(MathHelper.atan2(this.motionY, (double)f) * (180D / Math.PI)); this.rotationPitch - this.prevRotationPitch < -180.0F; this.prevRotationPitch -= 360.0F)
-        {
-
-        }
-
-        while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
-        {
-            this.prevRotationPitch += 360.0F;
-        }
-
-        while (this.rotationYaw - this.prevRotationYaw < -180.0F)
-        {
-            this.prevRotationYaw -= 360.0F;
-        }
-
-        while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
-        {
-            this.prevRotationYaw += 360.0F;
-        }
-
-        this.rotationPitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * 0.2F;
-        this.rotationYaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * 0.2F;
-        float f1 = 0.99F;
-        float f2 = this.getGravityVelocity();
-
-        if (this.isInWater())
-        {
-            for (int j = 0; j < 4; ++j)
-            {
-                float f3 = 0.25F;
-                this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX - this.motionX * 0.25D, this.posY - this.motionY * 0.25D, this.posZ - this.motionZ * 0.25D, this.motionX, this.motionY, this.motionZ);
-            }
-
-            f1 = 0.8F;
-        }
-
-        this.motionX *= (double)f1;
-        this.motionY *= (double)f1;
-        this.motionZ *= (double)f1;
-
-        if (!this.hasNoGravity())
-        {
-            this.motionY -= (double)f2;
-        }
 
         this.setPosition(this.posX, this.posY, this.posZ);
 

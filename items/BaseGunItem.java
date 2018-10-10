@@ -120,6 +120,10 @@ public class BaseGunItem extends Item{
         SlotClassList.add(FeedCore.class);
         SlotClassList.add(RecieverCore.class);
         SlotClassList.add(BarrelCore.class); //REPLACE WITH FURNITURE LATER
+        //ALSO, LOOK AT KNOBLE'S TOGGLE LOCK FOR AN IDEA OF THE OTHER TYPES OF MECHANISMS I NEED TO ACCOUNT FOR
+        //C98, HAS AN UNUSUAL MECHANISM THAT NEEDS TO BE POSSIBLE. MAYBE A LEGENDARY?
+        //PUMP ACTIONS NEED TO BE ABLE TO GO BACK-FORWARDS AND FORWARDS-BACK
+
     }
 
 
@@ -251,15 +255,15 @@ public class BaseGunItem extends Item{
 
     public void GunSelector(World worldIn, EntityPlayer playerIn) {
         if(selector==3) {
-            System.out.println("Selector set to full");
+            if(trackGunFiring){System.out.println("Selector set to full");}
             selector = 1;
         }
         else if(selector==2) {
-            System.out.println("Selector set to burst");
+            if(trackGunFiring){System.out.println("Selector set to burst");}
             selector=3;
         }
         else if(selector==1) {
-            System.out.println("Selector set to semi");
+            if(trackGunFiring){System.out.println("Selector set to semi");}
             selector=2;
         }
         //selector = (short)(selector+1);
@@ -391,7 +395,7 @@ public class BaseGunItem extends Item{
                             //logger.info("Cooldown: {}",getShootCooldown(player.getHeldItem(handIn)));
                             if (getShootCooldown(stack) == 0 && ((hasReset) || (selector == 3)) && isChambered) {
                                 //logger.info("I would have fired right now, I just don't want to.");
-                                System.out.println("Mouse firing, button: " + button + ", Reset: " + hasReset + ", selector: " + selector + ", chambered: " + isChambered);
+                                if(trackGunFiring){System.out.println("Mouse firing, button: " + button + ", Reset: " + hasReset + ", selector: " + selector + ", chambered: " + isChambered);}
                                 if (world.isRemote) {
                                     //World worldServer = Minecraft.getMinecraft().getIntegratedServer().getEntityWorld();
                                     ////world.getMinecraftServer().get;
