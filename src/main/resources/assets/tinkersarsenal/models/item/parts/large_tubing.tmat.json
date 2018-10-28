@@ -1,0 +1,11 @@
+
+{
+    "parent": "builtin/generated",
+    "textures": {
+        "layer0": "tinkersarsenal:items/large_tubing"
+    },
+    "offset": {
+        "x": 0,
+        "y": 0
+    }
+}

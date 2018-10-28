@@ -1,0 +1,18 @@
+[{
+  "modid": "tinkersarsenal",
+  "name": "Tinkers' Arsenal",
+  "description": "A mod to add realistic and survival-oriented gunsmithing into Minecraft.",
+  "version": "${version}",
+  "logoFile": "Mantle.png",
+  "mcversion": "${MCversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": [ "Nianor" ],
+  "credits": "Thanks to (yoyo author), (TC Team)",
+  "screenshots": [],
+  "parent": "",
+  "requiredMods": [],
+  "dependencies": [],
+  "dependants": [],
+  "useDependencyInformation": false
+}]

@@ -1,0 +1,12 @@
+
+{
+    "parent": "builtin/generated",
+    "textures": {
+        "layer0": "tinkersarsenal:items/experimental_face",
+		"layer1": "tinkersarsenal:items/experimental_core"
+    },
+    "offset": {
+        "x": 0,
+        "y": 0
+    }
+}

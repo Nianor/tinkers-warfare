@@ -1,0 +1,12 @@
+
+{
+    "parent": "builtin/generated",
+    "textures": {
+        "layer0": "tinkersarsenal:items/suppressed_core",
+		"layer1": "tinkersarsenal:items/suppressed_face"
+    },
+    "offset": {
+        "x": 0,
+        "y": 0
+    }
+}

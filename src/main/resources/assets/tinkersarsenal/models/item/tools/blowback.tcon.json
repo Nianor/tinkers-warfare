@@ -1,0 +1,13 @@
+
+{
+    "parent": "builtin/generated",
+    "textures": {
+        "layer0": "tinkersarsenal:items/blowback_face",
+		"layer1": "tinkersarsenal:items/blowback_body",
+		"layer2": "tinkersarsenal:items/blowback_spring"
+    },
+    "offset": {
+        "x": 0,
+        "y": 0
+    }
+}

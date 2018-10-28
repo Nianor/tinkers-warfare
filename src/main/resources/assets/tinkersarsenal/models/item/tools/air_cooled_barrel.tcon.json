@@ -1,0 +1,12 @@
+
+{
+    "parent": "builtin/generated",
+    "textures": {
+        "layer0": "tinkersarsenal:items/air_cooled_face",
+		"layer1": "tinkersarsenal:items/air_cooled_core"
+    },
+    "offset": {
+        "x": 0,
+        "y": 0
+    }
+}
